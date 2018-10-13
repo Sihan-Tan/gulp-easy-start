@@ -1,6 +1,7 @@
 module.exports = {
     srcPath: "src",
     tmpPath: "__temp__",
+    distPath: "dist",
     less: true,
     swig: true,
     babel: true,
@@ -11,7 +12,7 @@ module.exports = {
         base64: 10 * 1024, // byte 使用css中图片相对路径
         cssSourceMap: true,
         jsSourceMap: true,
-        // cdn: "",
+        cdn: "",
         versionHash: true  // 版本hash
     },
     proxyTable: {

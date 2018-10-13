@@ -8,8 +8,6 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="../_vendor/layui/css/layui.css">
-    <link rel="stylesheet" href="./index.css">
     {% block styles %}{% endblock %}
 </head>
 <body>
@@ -26,6 +24,6 @@
     <footer>
         {% block footer %}{% endblock %}
     </footer>
-    {% block scripts %}<script src="./index.js"></script>{% endblock %}
+    {% block scripts %}{% endblock %}
 </body>
 </html>
