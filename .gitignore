@@ -1,2 +1,4 @@
 node_modules/
 __temp__/
+dist/
+rev-manifest-*.json

@@ -1,5 +1,8 @@
 {% extends '../../_widget/index.html' %}
-{% parents styles %}{% endblock %}
+{% block styles %}
+{% parent %}
+<link rel="stylesheet" href="pages/home/index.css">
+{% endblock %}
 {% block title %}
     Home 
 {% endblock %}
@@ -8,3 +11,4 @@
         啦啦啦
      </div>
 {% endblock %}
+{% block scripts %}<script src="pages/home/index.js"></script>{% endblock %}
