@@ -3,7 +3,7 @@ module.exports = {
     tmpPath: "__temp__",
     distPath: "dist",
     less: true,
-    scss: false,
+    scss: true,
     swig: true,
     babel: true,
     build: {
@@ -13,7 +13,7 @@ module.exports = {
         base64: 10 * 1024, // byte 使用css中图片相对路径
         cssSourceMap: true,
         jsSourceMap: true,
-        cdn: "/",  // 记得以 / 结尾
+        cdn: "",  // 上线环境的前缀, 默认以当前src目录为根目录
         versionHash: true  // 版本hash
     },
     proxyTable: {

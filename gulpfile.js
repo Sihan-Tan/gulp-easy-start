@@ -38,7 +38,7 @@ let devTasks = ["dev_del_tmp"]
     .concat(config.less ? ["dev_less"] : [])
     .concat(config.scss ? ["dev_scss"] : [])
     .concat(config.babel ? ["dev_babel"] : [])
-    .concat(["dev_hot_css", "dev_move_vendor"]);
+    .concat(["dev_hot_css", "dev_move_vendor", "dev_move_pics"]);
 
 // 删除临时文件
 gulp.task("dev_del_tmp", function () {
@@ -62,16 +62,16 @@ gulp.task("dev_swig", function () {
 
 // 编译less 
 gulp.task("dev_less", function () {
-    return gulp.src([`${config.srcPath}/pages/**/*.less`, `${config.srcPath}/*.less`, `!${config.srcPath}/_vendor`])
+    return gulp.src([`${config.srcPath}/**/*.less`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(plumber())
         .pipe(less())
         .pipe(postcss())
-        .pipe(gulp.dest(config.tmpPath + "/pages"));
+        .pipe(gulp.dest(config.tmpPath));
 });
 
 // 编译scss 
 gulp.task("dev_scss", function () {
-    return gulp.src([`${config.srcPath}/pages/**/*.{sass,scss}`, `${config.srcPath}/*.{sass,scss}`, `!${config.srcPath}/_vendor`])
+    return gulp.src([`${config.srcPath}/**/*.{sass,scss}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(plumber())
         .pipe(sass({
             outputStyle: "expanded"
@@ -81,7 +81,7 @@ gulp.task("dev_scss", function () {
 
 // css 热更新
 gulp.task("dev_hot_css", function () {
-    return gulp.src([`${config.tmpPath}/**/*.css`, `!${config.srcPath}/_vendor`])
+    return gulp.src([`${config.tmpPath}/**/*.css`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(plumber())
         .pipe(reload({
             stream: true
@@ -90,7 +90,7 @@ gulp.task("dev_hot_css", function () {
 
 // babel js
 gulp.task("dev_babel", function () {
-    return gulp.src([`${config.srcPath}/**/*.es6`, `!${config.srcPath}/_vendor`])
+    return gulp.src([`${config.srcPath}/**/*.{es6,js}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(plumber())
         .pipe(changed(config.tmpPath, {
             extension: ".js"
@@ -105,6 +105,12 @@ gulp.task("dev_move_vendor", function () {
         .pipe(gulp.dest(config.tmpPath + '/_vendor'));
 });
 
+// move static pic
+gulp.task("dev_move_pics", function() {
+    return gulp.src([`${config.srcPath}/**/*.{jpg,jpeg,png,gif}`, `!${config.srcPath}/_vendor/**/*.*`])
+        .pipe(gulp.dest(config.tmpPath))
+})
+
 // dev 开发模式
 gulp.task("dev", devTasks, function () {
     browserSync.init({
@@ -117,7 +123,7 @@ gulp.task("dev", devTasks, function () {
         online: true
     });
     // 监听缓存文件夹
-    chokidar.watch([config.tmpPath, `${config.srcPath}/**/*.html`, `${config.srcPath}/**/*.{less,sass,scss}`, `!${config.srcPath}/_vendor`], {
+    chokidar.watch([config.tmpPath, `${config.srcPath}/**/*.html`, `${config.srcPath}/**/*.{less,sass,scss}`, `!${config.srcPath}/_vendor/**/*.*`], {
             ignoreInitial: true,
             ignorePermissionErrors: true
         })
@@ -167,8 +173,8 @@ gulp.task("dev", devTasks, function () {
                     // 当删除文件或者文件夹时
                     if (event === "unlink") {
                         // 要删除的dev目录下的文件的后缀替换
-                        deleteFilePath = file.replace(/\.less$/, ".css");
-                        deleteFilePath = file.replace(/\.{sass,scss}$/, ".css");
+                        deleteFilePath = filePath.replace(/\.less$/, ".css");
+                        deleteFilePath = filePath.replace(/\.{sass,scss}$/, ".css");
                     } else {
                         deleteFilePath = filePath;
                     }
@@ -176,8 +182,8 @@ gulp.task("dev", devTasks, function () {
                     deleteFilePath = path.resolve(__dirname, deleteFilePath.replace(config.srcPath, config.tmpPath));
                     console.log("deleteFilePath: ", deleteFilePath);
                     del.sync(deleteFilePath);
-                    reload()
                 }
+                reload();
             } catch (error) {
                 console.error("chokidar error: ", error);
             }
@@ -221,13 +227,19 @@ gulp.task("build_html", function () {
     }
     return gulp.src([`${config.srcPath}/**/*.html`, `${config.srcPath}/index.html`, `!${config.srcPath}/_widget/*.html`])
         .pipe(gulpIF(config.swig, swig()))
-        .pipe(gulpIF(!!config.build.cdn, prefix(config.build.cdn, null)))
+        .pipe(gulpIF(!!config.build.cdn, prefix(config.build.cdn, null/* , "./" */)))
         .pipe(gulpIF(config.build.htmlmin, htmlmin(htmlminConfig)))
         .pipe(gulpIF(config.build.versionHash, revReplace({
-            manifest: manifestJs
+            manifest: manifestJs,
+            // modifyReved: (filename) => {
+            //     return filename.replace(/^pages\/.*\/index/, "./index");
+            // }
         })))
         .pipe(gulpIF(config.build.versionHash, revReplace({
-            manifest: manifestCSS
+            manifest: manifestCSS,
+            // modifyReved: (filename) => {
+            //     return filename.replace(/^pages\/.*\/index/, "./index");
+            // }
         })))
         .pipe(gulp.dest(config.distPath));
 });
@@ -249,15 +261,12 @@ gulp.task("build_css", function () {
         .pipe(gulpIF(config.build.versionHash, rev()))
         .pipe(gulpIF(config.build.cssSourceMap, sourcemaps.write()))
         .pipe(gulp.dest(config.distPath))
-        .pipe(gulpIF(config.build.versionHash, rev.manifest("rev-manifest-css.json",{
-            base: "./",
-            cwd: "./"
-        })))
+        .pipe(gulpIF(config.build.versionHash, rev.manifest("rev-manifest-css.json")))
         .pipe(gulpIF(config.build.versionHash, gulp.dest("")))
 });
 // 处理 js
 gulp.task("build_js", function () {
-    return gulp.src([`${config.srcPath}/**/*.es6`, `!${config.srcPath}/_vendor`])
+    return gulp.src([`${config.srcPath}/**/*.{es6,js}`, `!${config.srcPath}/_vendor`])
         .pipe(gulpIF(config.build.jsSourceMap, sourcemaps.init()))
         .pipe(gulpIF(config.babel, babel()))
         .pipe(gulpIF(config.build.jsMin, uglify({
@@ -277,7 +286,7 @@ gulp.task("build_imagemin", function () {
         .pipe(cache(imagemin([mozjpeg({
             quality: 70
         }), pngquant({
-            quality: 70
+            floyd: 0.7
         })])))
         .pipe(gulp.dest(config.distPath))
 });
