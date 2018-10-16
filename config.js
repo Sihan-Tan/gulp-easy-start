@@ -17,6 +17,12 @@ module.exports = {
         versionHash: true  // 版本hash
     },
     proxyTable: {
-        "/api": "http://localhost:3000"
+        "/api": "http://localhost:3000",
+        "/myApi": {
+            target: "http://localhost:3000",
+            pathRewrite: {
+                "^/myApi": "/api"
+            }
+        }
     }
 }

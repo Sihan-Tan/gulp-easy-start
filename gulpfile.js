@@ -146,7 +146,7 @@ gulp.task("dev", devTasks, function () {
                 console.log("[dev]: ", event, path.resolve(__dirname, filePath));
                 // 当文件为改变或者新增时, 进行相应的任务判断
                 if (event === "change" || event === "add") {
-                    if (/\.es6$/.test(filePath)) {
+                    if (/(\.es6|\.js)$/.test(filePath)) {
                         if (!config.babel) {
                             reload();
                             return false;
@@ -154,15 +154,17 @@ gulp.task("dev", devTasks, function () {
                         task = "dev_babel";
                     } else if (config.less && /\.less$/.test(filePath)) {
                         task = "dev_less";
-                    } else if (config.scss && /\.{sass,scss}$/.test(filePath)) {
+                    } else if (config.scss && /(\.sass|\.scss)$/.test(filePath)) {
                         task = "dev_scss";
                     } else if (config.swig && /\.html/.test(filePath)) {
                         task = "dev_swig";
                     }
+                    console.info(task);
                     if (!task) {
                         return false;
                     }
                     if (event === "change") {
+                        console.log("[dev]: start " + task);
                         gulp.start(task);
                     } else {
                         setTimeout(() => {
@@ -174,7 +176,7 @@ gulp.task("dev", devTasks, function () {
                     if (event === "unlink") {
                         // 要删除的dev目录下的文件的后缀替换
                         deleteFilePath = filePath.replace(/\.less$/, ".css");
-                        deleteFilePath = filePath.replace(/\.{sass,scss}$/, ".css");
+                        deleteFilePath = filePath.replace(/(\.sass|\.scss)$/, ".css");
                     } else {
                         deleteFilePath = filePath;
                     }
