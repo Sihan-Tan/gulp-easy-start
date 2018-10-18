@@ -227,9 +227,9 @@ gulp.task("build_html", function () {
         manifestJs = gulp.src("rev-manifest-js.json");
         manifestCSS = gulp.src("rev-manifest-css.json");
     }
-    return gulp.src([`${config.srcPath}/**/*.html`, `${config.srcPath}/index.html`, `!${config.srcPath}/_widget/*.html`])
+    return gulp.src([`${config.srcPath}/**/*.html`, `!${config.srcPath}/_widget/*.html`])
         .pipe(gulpIF(config.swig, swig()))
-        .pipe(gulpIF(!!config.build.cdn, prefix(config.build.cdn, null/* , "./" */)))
+        .pipe(gulpIF(!!config.build.cdn, prefix(config.build.cdn, config.build.tags, config.build.ignore && config.build.ignore)))
         .pipe(gulpIF(config.build.htmlmin, htmlmin(htmlminConfig)))
         .pipe(gulpIF(config.build.versionHash, revReplace({
             manifest: manifestJs,
@@ -247,7 +247,8 @@ gulp.task("build_html", function () {
 });
 // 处理 css
 gulp.task("build_css", function () {
-    return gulp.src([`${config.srcPath}/**/*.{less,sass,scss}`, `${config.srcPath}/*.{less,sass,scss}`, `!${config.srcPath}/_vendor`])
+    return gulp.src([`${config.srcPath}/**/*.{less,sass,scss}`, `!${config.srcPath}/_vendor/**/*.*`])
+    // return gulp.src([`${config.tmpPath}/**/*.{css}`, `!${config.srcPath}/_vendor/**/*.*`]) //如果出错可以使用css文件直接处理
         .pipe(gulpIF(config.build.cssSourceMap, sourcemaps.init()))
         .pipe(gulpIF(config.less, less()))
         .pipe(gulpIF((config.scss || config.sass), sass({
@@ -268,7 +269,7 @@ gulp.task("build_css", function () {
 });
 // 处理 js
 gulp.task("build_js", function () {
-    return gulp.src([`${config.srcPath}/**/*.{es6,js}`, `!${config.srcPath}/_vendor`])
+    return gulp.src([`${config.srcPath}/**/*.{es6,js}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(gulpIF(config.build.jsSourceMap, sourcemaps.init()))
         .pipe(gulpIF(config.babel, babel()))
         .pipe(gulpIF(config.build.jsMin, uglify({
@@ -284,7 +285,7 @@ gulp.task("build_js", function () {
 });
 // 图片压缩
 gulp.task("build_imagemin", function () {
-    gulp.src([`${config.srcPath}/**/*.{jpg,jpeg,png}`, `!${config.srcPath}/_vendor`])
+    gulp.src([`${config.srcPath}/**/*.{jpg,jpeg,png}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(cache(imagemin([mozjpeg({
             quality: 70
         }), pngquant({

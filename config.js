@@ -14,6 +14,20 @@ module.exports = {
         cssSourceMap: true,
         jsSourceMap: true,
         cdn: "",  // 上线环境的前缀, 默认以当前src目录为根目录
+        tags: [{    // 需要替换cdn的路径资源
+            match: "script[src]",
+            attr: "src"
+        }, {
+            match: "link[href]",
+            attr: "href"
+        }, {
+            match: "img[src]",
+            attr: "src"
+        }, {
+            match: "a[href]",
+            attr: "href"
+        }],
+        ignore: "", // 忽略替换的前缀 如  pages 会忽略以改项开头的 tags
         versionHash: true  // 版本hash
     },
     proxyTable: {
