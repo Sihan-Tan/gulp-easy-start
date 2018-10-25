@@ -285,7 +285,7 @@ gulp.task("build_js", function () {
 });
 // 图片压缩
 gulp.task("build_imagemin", function () {
-    gulp.src([`${config.srcPath}/**/*.{jpg,jpeg,png}`, `!${config.srcPath}/_vendor/**/*.*`])
+    gulp.src([`${config.srcPath}/**/*.{jpg,jpeg,png}`, `!${config.srcPath}/_vendor/**/*.*`, `!${config.srcPath}/sprites/*.{jpg,jpeg,png}`])
         .pipe(cache(imagemin([mozjpeg({
             quality: 70
         }), pngquant({
@@ -313,3 +313,60 @@ gulp.task("start", ["build"], function () {
     })
 });
 
+// 雪碧图
+const spritesmith = require('gulp.spritesmith');
+gulp.task('sprites', function() {
+    var spritesData = gulp.src(`${config.srcPath}/sprites/*.{jpg,png,jpeg}`)
+        .pipe(spritesmith({
+            imgName: 'sprite.png',
+            cssName: 'sprite.css',
+            padding: 10
+        }))
+    return spritesData.pipe(gulp.dest(`${config.distPath}/sprites/`))
+})
+
+// 兼容 webp
+gulp.task('webp', ['generateWebp', 'webpcss', 'webphtml']);
+const generateWebp = require('gulp-webp');
+gulp.task('generateWebp', function() {
+    gulp.src(`${config.distPath}/**/*.{png,jpg,jpeg}`)
+        .pipe(generateWebp())
+        .pipe(gulp.dest(config.distPath))
+});
+
+const webpcss = require('gulp-webpcss')
+const cssname = require('gulp-cssnano')
+gulp.task('webpcss', function() {
+    gulp.src(`${config.distPath}/**/*.css`)
+        .pipe(webpcss({
+            webpClass: '.__webp__',
+            replace_from: /\.(png|jpg|jpeg)/,
+            replace_to: '.webp'
+        }))
+        .pipe(cssname())
+        .pipe(gulp.dest(config.distPath))
+})
+
+const cheerio = require('gulp-cheerio')
+gulp.task('webphtml', function() {
+    return gulp.src(`${config.distPath}/**/*.html`)
+        .pipe(cheerio(function($, file) {
+            // 插入 webp.js
+            var webpJs = fs.readFileSync(`${config.srcPath}/_vendor/__webp__.js`, 'utf-8')
+            $('head').append(`<script id="__webp__">${webpJs}</script>`)
+            $('img[src]:not(.not-webp)').each( function() {
+                var imgEl = $(this)
+                var src = imgEl.attr('src')
+                if(/^http|\.(gif|svg)$/.test(src)) {
+                    return false;
+                }
+                imgEl.css('visibility', 'hidden')
+                imgEl.removeAttr('src')
+                imgEl.attr('data-src', src)
+            })
+            if($('#__webp__').length > 0) {
+                return ;
+            }
+        }))
+        .pipe(gulp.dest(config.distPath))
+})
