@@ -9,6 +9,7 @@ const chokidar = require("chokidar");
 const del = require("del");
 const cache = require("gulp-cache");
 const fs = require("fs");
+const ts = require('gulp-typescript');
 
 // 压缩
 const htmlmin = require("gulp-htmlmin");
@@ -88,8 +89,19 @@ gulp.task("dev_hot_css", function () {
         }));
 });
 
+// 编译 ts
+gulp.task("dev_ts", function () {
+    return gulp.src([`${config.srcPath}/**/*.{ts,tsx}`, `!${config.srcPath}/_vendor/**/*.*`])
+        .pipe(plumber())
+        .pipe(changed(config.tmpPath, {
+            extension: ".js"
+        }))
+        .pipe(ts())
+        .pipe(gulp.dest(config.tmpPath));
+})
+
 // babel js
-gulp.task("dev_babel", function () {
+gulp.task("dev_babel", [].concat([ config.ts ? 'dev_ts' : '']), function () {
     return gulp.src([`${config.srcPath}/**/*.{es6,js}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(plumber())
         .pipe(changed(config.tmpPath, {
@@ -106,7 +118,7 @@ gulp.task("dev_move_vendor", function () {
 });
 
 // move static pic
-gulp.task("dev_move_pics", function() {
+gulp.task("dev_move_pics", function () {
     return gulp.src([`${config.srcPath}/**/*.{jpg,jpeg,png,gif}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(gulp.dest(config.tmpPath))
 })
@@ -248,7 +260,7 @@ gulp.task("build_html", function () {
 // 处理 css
 gulp.task("build_css", function () {
     return gulp.src([`${config.srcPath}/**/*.{less,sass,scss}`, `!${config.srcPath}/_vendor/**/*.*`])
-    // return gulp.src([`${config.tmpPath}/**/*.{css}`, `!${config.srcPath}/_vendor/**/*.*`]) //如果出错可以使用css文件直接处理
+        // return gulp.src([`${config.tmpPath}/**/*.{css}`, `!${config.srcPath}/_vendor/**/*.*`]) //如果出错可以使用css文件直接处理
         .pipe(gulpIF(config.build.cssSourceMap, sourcemaps.init()))
         .pipe(gulpIF(config.less, less()))
         .pipe(gulpIF((config.scss || config.sass), sass({
@@ -267,8 +279,18 @@ gulp.task("build_css", function () {
         .pipe(gulpIF(config.build.versionHash, rev.manifest("rev-manifest-css.json")))
         .pipe(gulpIF(config.build.versionHash, gulp.dest("")))
 });
+// 编译 ts
+gulp.task("build_ts", function () {
+    return gulp.src([`${config.srcPath}/**/*.{ts,tsx}`, `!${config.srcPath}/_vendor/**/*.*`])
+        .pipe(plumber())
+        .pipe(changed(config.srcPath, {
+            extension: ".js"
+        }))
+        .pipe(ts())
+        .pipe(gulp.dest(config.srcPath));
+})
 // 处理 js
-gulp.task("build_js", function () {
+gulp.task("build_js", [].concat([ config.ts ? 'build_ts' : '']), function () {
     return gulp.src([`${config.srcPath}/**/*.{es6,js}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(gulpIF(config.build.jsSourceMap, sourcemaps.init()))
         .pipe(gulpIF(config.babel, babel()))
@@ -315,7 +337,7 @@ gulp.task("start", ["build"], function () {
 
 // 雪碧图
 const spritesmith = require('gulp.spritesmith');
-gulp.task('sprites', function() {
+gulp.task('sprites', function () {
     var spritesData = gulp.src(`${config.srcPath}/sprites/*.{jpg,png,jpeg}`)
         .pipe(spritesmith({
             imgName: 'sprite.png',
@@ -328,7 +350,7 @@ gulp.task('sprites', function() {
 // 兼容 webp
 gulp.task('webp', ['generateWebp', 'webpcss', 'webphtml']);
 const generateWebp = require('gulp-webp');
-gulp.task('generateWebp', function() {
+gulp.task('generateWebp', function () {
     gulp.src(`${config.distPath}/**/*.{png,jpg,jpeg}`)
         .pipe(generateWebp())
         .pipe(gulp.dest(config.distPath))
@@ -336,7 +358,7 @@ gulp.task('generateWebp', function() {
 
 const webpcss = require('gulp-webpcss')
 const cssname = require('gulp-cssnano')
-gulp.task('webpcss', function() {
+gulp.task('webpcss', function () {
     gulp.src(`${config.distPath}/**/*.css`)
         .pipe(webpcss({
             webpClass: '.__webp__',
@@ -348,24 +370,24 @@ gulp.task('webpcss', function() {
 })
 
 const cheerio = require('gulp-cheerio')
-gulp.task('webphtml', function() {
+gulp.task('webphtml', function () {
     return gulp.src(`${config.distPath}/**/*.html`)
-        .pipe(cheerio(function($, file) {
+        .pipe(cheerio(function ($, file) {
             // 插入 webp.js
             var webpJs = fs.readFileSync(`${config.srcPath}/_vendor/__webp__.js`, 'utf-8')
             $('head').append(`<script id="__webp__">${webpJs}</script>`)
-            $('img[src]:not(.not-webp)').each( function() {
+            $('img[src]:not(.not-webp)').each(function () {
                 var imgEl = $(this)
                 var src = imgEl.attr('src')
-                if(/^http|\.(gif|svg)$/.test(src)) {
+                if (/^http|\.(gif|svg)$/.test(src)) {
                     return false;
                 }
                 imgEl.css('visibility', 'hidden')
                 imgEl.removeAttr('src')
                 imgEl.attr('data-src', src)
             })
-            if($('#__webp__').length > 0) {
-                return ;
+            if ($('#__webp__').length > 0) {
+                return;
             }
         }))
         .pipe(gulp.dest(config.distPath))

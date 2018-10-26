@@ -43,12 +43,14 @@
     "gulp-sass": "^4.0.1",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-swig": "^0.8.0",
+    "gulp-typescript": "^5.0.0-alpha.3",
     "gulp-uglify": "^3.0.1",
     "gulp-webp": "^3.0.0",
     "gulp-webpcss": "^1.1.1",
     "gulp.spritesmith": "^6.9.0",
     "http-proxy-middleware": "^0.19.0",
     "imagemin-mozjpeg": "^7.0.0",
-    "imagemin-pngquant": "^6.0.0"
+    "imagemin-pngquant": "^6.0.0",
+    "typescript": "^3.1.3"
   }
 }

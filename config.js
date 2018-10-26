@@ -5,6 +5,7 @@ module.exports = {
     less: true,
     scss: true,
     swig: true,
+    ts: true,
     babel: true,
     build: {
         htmlmin: true,
