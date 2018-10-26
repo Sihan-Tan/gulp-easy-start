@@ -1,4 +1,5 @@
 node_modules/
 __temp__/
 dist/
+coverage/
 rev-manifest-*.json
