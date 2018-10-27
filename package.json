@@ -10,7 +10,9 @@
     "sprites": "gulp sprites",
     "webp": "gulp webp",
     "unit": "karma start",
-    "mocha": "node ./mochaRunner.js"
+    "mocha": "node ./mochaRunner.js",
+    "e2e": "node ./e2e/test.js",
+    "pv": "node ./autocannon.js"
   },
   "keywords": [
     "gulp"
@@ -18,11 +20,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "autocannon": "^3.1.0",
+    "autocannon-reporter": "0.0.6",
     "autoprefixer": "^9.1.5",
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
+    "backstopjs": "^3.7.0",
     "browser-sync": "^2.26.0",
     "chokidar": "^2.0.4",
+    "chromium": "^1.0.2",
     "del": "^3.0.0",
     "express": "^4.16.4",
     "gulp": "^3.9.1",
@@ -61,6 +67,8 @@
     "karma-jasmine": "^1.1.2",
     "mocha": "^5.2.0",
     "mochawesome": "^3.1.1",
+    "puppeteer": "^1.9.0",
+    "selenium-webdriver": "^4.0.0-alpha.1",
     "supertest": "^3.3.0",
     "typescript": "^3.1.3"
   }

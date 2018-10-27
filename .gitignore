@@ -1,5 +1,7 @@
 node_modules/
 __temp__/
 dist/
-coverage/
+reporter/api
+reporter/unit
+reporter/pv/*.html
 rev-manifest-*.json
