@@ -56,7 +56,11 @@ const middleware = config.proxyTable && Object.prototype.toString.call(config.pr
 gulp.task("dev_swig", function () {
     return gulp.src([`${config.srcPath}/**/*.html`, `${config.srcPath}/*.html`, `!${config.srcPath}/_widget/*.html`])
         .pipe(plumber())
-        .pipe(swig())
+        .pipe(swig({
+			defaults: {
+				cache: false
+			}
+		}))
         .pipe(htmlmin())
         .pipe(gulp.dest(config.tmpPath))
 });
