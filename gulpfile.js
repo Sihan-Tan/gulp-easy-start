@@ -67,7 +67,7 @@ gulp.task("dev_swig", function () {
 
 // 编译less 
 gulp.task("dev_less", function () {
-    return gulp.src([`${config.srcPath}/**/*.less`, `!${config.srcPath}/_vendor/**/*.*`])
+    return gulp.src([`${config.srcPath}/**/*.{less,css}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(plumber())
         .pipe(less())
         .pipe(postcss())
@@ -76,7 +76,7 @@ gulp.task("dev_less", function () {
 
 // 编译scss 
 gulp.task("dev_scss", function () {
-    return gulp.src([`${config.srcPath}/**/*.{sass,scss}`, `!${config.srcPath}/_vendor/**/*.*`])
+    return gulp.src([`${config.srcPath}/**/*.{sass,scss,css}`, `!${config.srcPath}/_vendor/**/*.*`])
         .pipe(plumber())
         .pipe(sass({
             outputStyle: "expanded"
@@ -162,7 +162,7 @@ gulp.task("dev", devTasks, function () {
                 console.log("[dev]: ", event, path.resolve(__dirname, filePath));
                 // 当文件为改变或者新增时, 进行相应的任务判断
                 if (event === "change" || event === "add") {
-                    if (/(\.es6|\.js)$/.test(filePath)) {
+                    if (/(\.es6|\.js|\.ts|\.tsx)$/.test(filePath)) {
                         if (!config.babel) {
                             reload();
                             return false;
