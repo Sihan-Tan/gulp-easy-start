@@ -174,7 +174,11 @@ gulp.task("dev", devTasks, function () {
                         task = "dev_scss";
                     } else if (config.swig && /\.html/.test(filePath)) {
                         task = "dev_swig";
-                    }
+                    } else if (/_vendor/.test(filePath)) {
+			task = "dev_move_vendor";
+		    } else {
+		    	task = "dev_move_pics";
+		    }
                     console.info(task);
                     if (!task) {
                         return false;
